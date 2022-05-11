@@ -3,12 +3,21 @@ import slugify from 'slugify';
 import { PrismaService } from '../database/prisma/prisma.service';
 
 interface CreateCourseParams {
+  slug?: string;
   title: string;
 }
 
 @Injectable()
 export class CoursesService {
   constructor(private prisma: PrismaService) {}
+
+  getCourseBySlug(slug: string) {
+    return this.prisma.course.findUnique({
+      where: {
+        slug,
+      },
+    });
+  }
 
   listAllCourses() {
     return this.prisma.course.findMany();
@@ -22,9 +31,10 @@ export class CoursesService {
     });
   }
 
-  async createCourse({ title }: CreateCourseParams) {
-    const slug = slugify(title, { lower: true });
-
+  async createCourse({
+    title,
+    slug = slugify(title, { lower: true }),
+  }: CreateCourseParams) {
     const courseAlreadyExists = await this.prisma.course.findUnique({
       where: {
         slug,
